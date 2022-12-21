@@ -6,9 +6,14 @@
 #
 #    http://shiny.rstudio.com/
 #
+if (!require(DS401)) install.packages('DS401')
+if (!require(shiny)) install.packages('shiny')
+if (!require(x3ptools)) install.packages('x3ptools')
+library(DS401)
+library(shiny)
+library(x3ptools)
 
 predict_one <- function(Forest, X3P) {
-  library(DS401)
   df <- data.frame(assess_bottomempty = double(),
                    assess_col_na = double(),
                    assess_median_na_proportion = double(),
@@ -22,8 +27,6 @@ predict_one <- function(Forest, X3P) {
 }
 
 standardQualityForest = get(load("TestForest.RData"))
-library(shiny)
-library(x3ptools)
 options(shiny.maxRequestSize = 15 * 1024^2)
 
 ui <- fluidPage(
