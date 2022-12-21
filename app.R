@@ -9,9 +9,11 @@
 if (!require(DS401)) install.packages('DS401')
 if (!require(shiny)) install.packages('shiny')
 if (!require(x3ptools)) install.packages('x3ptools')
+if (!require(tidyverse)) install.packages('tidyverse')
 library(DS401)
 library(shiny)
 library(x3ptools)
+library(tidyverse)
 
 predict_one <- function(Forest, X3P) {
   df <- data.frame(assess_bottomempty = double(),
@@ -36,6 +38,7 @@ ui <- fluidPage(
       checkboxInput("header", "Header", TRUE)
     ),
     mainPanel(
+      textOutput("attempt"),
       textOutput("prediction")
     )
   )
@@ -48,14 +51,23 @@ server <- function(input, output) {
     file <- input$file1
     ext <- tools::file_ext(file$datapath)
 
+    output$attempt <- renderPrint({
+      validate(need(ext == "x3p", "Please only upload X3P files"))
+    })
 
-    validate(need(ext == "x3p", "Please upload a x3p file"))
+    validate(need(ext == "x3p", ""))
+    print(file$name)
+    fau = str_extract(file$name, "(?<=FAU)...")
+    bullet = str_extract(file$name, "(?<=-B).")
+    land = str_extract(file$name, "(?<=-L).")
 
     x3p <- read_x3p(file$datapath)
     pred = as.numeric(predict_one(standardQualityForest, x3p)) * 100
     output$prediction <- renderPrint({
-      paste("The probability that this is a good scan is", pred, "%")
+      paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
+        "The probability that this is a good scan is", pred, "%")
     })
+
   })
 
 
