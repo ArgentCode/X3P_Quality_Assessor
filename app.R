@@ -38,8 +38,8 @@ ui <- fluidPage(
       checkboxInput("header", "Header", TRUE)
     ),
     mainPanel(
-      textOutput("attempt"),
-      textOutput("prediction")
+      textOutput("prediction"),
+      plotOutput("scan")
     )
   )
 )
@@ -51,7 +51,7 @@ server <- function(input, output) {
     file <- input$file1
     ext <- tools::file_ext(file$datapath)
 
-    output$attempt <- renderPrint({
+    output$prediction <- renderPrint({
       validate(need(ext == "x3p", "Please only upload X3P files"))
     })
 
@@ -67,7 +67,9 @@ server <- function(input, output) {
       paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
         "The probability that this is a good scan is", pred, "%")
     })
-
+    output$scan <- renderPlot({
+      outfile <- image(x3p)
+    })
   })
 
 
