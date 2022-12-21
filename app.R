@@ -44,6 +44,10 @@ server <- function(input, output) {
   observeEvent(input$file1, {
     file <- input$file1
     ext <- tools::file_ext(file$datapath)
+
+
+    validate(need(ext == "x3p", "Please upload a x3p file"))
+
     x3p <- read_x3p(file$datapath)
     pred = as.numeric(predict_one(standardQualityForest, x3p)) * 100
     output$prediction <- renderPrint({
