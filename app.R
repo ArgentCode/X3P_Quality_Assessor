@@ -57,9 +57,10 @@ server <- function(input, output) {
 
     validate(need(ext == "x3p", ""))
     print(file$name)
-    fau = str_extract(file$name, "(?<=FAU)...")
-    bullet = str_extract(file$name, "(?<=-B).")
-    land = str_extract(file$name, "(?<=-L).")
+    temp = str_extract(file$name, "(LAPD - )[0-9]+")
+    fau = str_extract(temp, "[0-9]+")
+    bullet = str_extract(file$name, "(?=Bullet)[A-G]+")
+    land = str_extract(file$name, "(?<=Land).[0-9]+")
 
     x3p <- read_x3p(file$datapath)
     pred = as.numeric(predict_one(standardQualityForest, x3p)) * 100
