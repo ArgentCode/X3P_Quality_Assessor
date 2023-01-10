@@ -15,20 +15,13 @@ library(shiny)
 library(x3ptools)
 library(tidyverse)
 
-predict_one <- function(Forest, X3P) {
-  df <- data.frame(assess_bottomempty = double(),
-                   assess_col_na = double(),
-                   assess_median_na_proportion = double(),
-                   assess_middle_na_proportion = double(),
-                   extract_na = double(),
-                   assess_rotation = double()
-  )
-  df[1,] = c(assess_bottomempty(X3P), assess_col_na(X3P), assess_median_na_proportion(X3P),
-          assess_middle_na_proportion(X3P), extract_na(X3P), assess_rotation(X3P))
-  return(predict(Forest, df, type = 'prob')[,2])
-}
+source("crop_x3p.R")
+source("assess_col_na_cropped.R")
+source("assess_bottomempty_cropped.R")
+source("extract_na_cropped.R")
+source("predict_one.R")
+source("returnproblem.R")
 
-standardQualityForest = get(load("TestForest.RData"))
 options(shiny.maxRequestSize = 15 * 1024^2)
 
 ui <- fluidPage(
@@ -62,10 +55,17 @@ server <- function(input, output) {
     land = str_extract(file$name, "(?<=Land).[0-9]+")
 
     x3p <- read_x3p(file$datapath)
-    pred = as.numeric(predict_one(standardQualityForest, x3p)) * 100
+    pred = predict_one(x3p)
+    outputText <- paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
+                        "The probability that this is a good scan is", pred[1], "%")
+    problem = ""
+
+    if (pred[1] <= 75) {
+      problem = paste("The problem is predicted to be", pred[2])
+      outputText <- paste(outputText, problem)
+    }
     output$prediction <- renderPrint({
-      paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
-        "The probability that this is a good scan is", pred, "%")
+      outputText
     })
     output$scan <- renderPlot({
       outfile <- image(x3p)
