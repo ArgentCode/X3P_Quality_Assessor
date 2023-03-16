@@ -6,14 +6,18 @@
 #
 #    http://shiny.rstudio.com/
 #
-if (!require(DS401)) install.packages('DS401')
+if (!require(DS401)) devtools::install_github("heike/DS401")
 if (!require(shiny)) install.packages('shiny')
 if (!require(x3ptools)) install.packages('x3ptools')
+if (!require(png)) install.packages('png')
 if (!require(tidyverse)) install.packages('tidyverse')
 library(DS401)
 library(shiny)
 library(x3ptools)
 library(tidyverse)
+library(png)
+
+## XXX Check out Rayshader
 
 source("crop_x3p.R")
 source("assess_col_na_cropped.R")
@@ -32,13 +36,12 @@ ui <- fluidPage(
     ),
     mainPanel(
       textOutput("prediction"),
-      plotOutput("scan")
+      imageOutput("preImage")
     )
   )
 )
 
 server <- function(input, output) {
-
 
   observeEvent(input$file1, {
     file <- input$file1
@@ -59,6 +62,8 @@ server <- function(input, output) {
     outputText <- paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
                         "The probability that this is a good scan is", pred[1], "%")
     problem = ""
+    x3p_imager <- x3p_image(x3p, file="temp.png")
+    png <- readPNG("temp.png")
 
     if (pred[1] <= 75) {
       problem = paste("The problem is predicted to be", pred[2])
@@ -67,11 +72,16 @@ server <- function(input, output) {
     output$prediction <- renderPrint({
       outputText
     })
-    output$scan <- renderPlot({
-      outfile <- image(x3p)
-    })
-  })
 
+    output$preImage <- renderImage({
+      # When input$n is 3, filename is ./images/image3.jpeg
+      filename <- normalizePath(file.path('temp.png'))
+
+      # Return a list containing the filename and alt text
+      list(src = filename, alt = "Failed Image")
+
+    }, deleteFile = TRUE)
+  })
 
 }
 
