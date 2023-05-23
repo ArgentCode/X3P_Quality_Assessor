@@ -29,10 +29,10 @@ source("returnproblem.R")
 options(shiny.maxRequestSize = 15 * 1024^2)
 
 ui <- fluidPage(
+  titlePanel("X3P Quality Assessor"),
   sidebarLayout(
     sidebarPanel(
-      fileInput("file1", "Choose x3p File", accept = ".x3p"),
-      checkboxInput("header", "Header", TRUE)
+      fileInput("file1", "Choose x3p File", accept = ".x3p")
     ),
     mainPanel(
       textOutput("prediction"),
@@ -60,15 +60,9 @@ server <- function(input, output) {
     x3p <- read_x3p(file$datapath)
     pred = predict_one(x3p)
     outputText <- paste("FAU:", fau, "Bullet:", bullet, "Land:", land,
-                        "The probability that this is a good scan is", pred[1], "%")
-    problem = ""
+                        "The confidence that this is a good scan is", pred, "%")
     x3p_imager <- x3p_image(x3p, file="temp.png")
     png <- readPNG("temp.png")
-
-    if (pred[1] <= 75) {
-      problem = paste("The problem is predicted to be", pred[2])
-      outputText <- paste(outputText, problem)
-    }
     output$prediction <- renderPrint({
       outputText
     })
